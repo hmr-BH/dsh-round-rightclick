@@ -5,6 +5,7 @@ A radial right-click menu for DeepSeek Harness. Right-click a specific turn in t
 [简体中文](README.md) · [Changelog](CHANGELOG.md)
 
 ![Release](https://img.shields.io/github/v/release/hmr-BH/dsh-round-rightclick?display_name=tag&sort=semver)
+![npm](https://img.shields.io/npm/v/dsh-round-rightclick)
 ![License](https://img.shields.io/github/license/hmr-BH/dsh-round-rightclick)
 
 ## Why this plugin exists
@@ -40,7 +41,15 @@ Forking turn 1 produces a session containing only turn 1; forking turn 2 produce
 
 ## Install
 
-### From a release tarball (recommended)
+### From npm (recommended)
+
+```sh
+dsh plugin --profile web add dsh-round-rightclick
+```
+
+Restart `dsh web` and refresh the page. The npm package ships built output, so neither pnpm nor a local build is required; a prebuilt publish does not trigger a build approval either.
+
+### From a release tarball
 
 Download `dsh-round-rightclick-0.1.0.tgz` from [Releases](https://github.com/hmr-BH/dsh-round-rightclick/releases), then run:
 
@@ -48,7 +57,7 @@ Download `dsh-round-rightclick-0.1.0.tgz` from [Releases](https://github.com/hmr
 dsh plugin --profile web add ./dsh-round-rightclick-0.1.0.tgz
 ```
 
-Restart `dsh web` and refresh the page. The tarball contains built output, so neither pnpm nor a local build is required.
+Restart `dsh web` and refresh the page. The tarball contains built output as well.
 
 ### From source
 

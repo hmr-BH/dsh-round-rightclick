@@ -5,6 +5,7 @@
 [English](README.en.md) · [更新记录](CHANGELOG.md)
 
 ![版本](https://img.shields.io/github/v/release/hmr-BH/dsh-round-rightclick?display_name=tag&sort=semver)
+![npm](https://img.shields.io/npm/v/dsh-round-rightclick)
 ![许可证](https://img.shields.io/github/license/hmr-BH/dsh-round-rightclick)
 
 ## 为什么需要这个插件
@@ -40,7 +41,15 @@ DSH 的会话操作分散在页面各处。工作目录需要在侧栏中查找�
 
 ## 安装
 
-### Release 包安装（推荐）
+### npm 安装（推荐）
+
+```sh
+dsh plugin --profile web add dsh-round-rightclick
+```
+
+重启 `dsh web` 并刷新页面。npm 包内已含构建产物，无需安装 pnpm，也无需本地编译；预构建发布也不会触发构建授权。
+
+### Release 包安装
 
 从 [Releases](https://github.com/hmr-BH/dsh-round-rightclick/releases) 下载 `dsh-round-rightclick-0.1.0.tgz`，然后执行：
 
@@ -48,7 +57,7 @@ DSH 的会话操作分散在页面各处。工作目录需要在侧栏中查找�
 dsh plugin --profile web add ./dsh-round-rightclick-0.1.0.tgz
 ```
 
-重启 `dsh web` 并刷新页面。安装包内已含构建产物，无需安装 pnpm，也无需本地编译。
+重启 `dsh web` 并刷新页面。tarball 内同样已含构建产物。
 
 ### 源码安装
 
