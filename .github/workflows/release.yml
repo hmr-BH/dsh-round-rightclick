@@ -1,0 +1,73 @@
+name: Release to npm
+
+# 在 GitHub 上把 Release 正式发布（published）后，自动把该 tag 的代码发到 npm。
+# 鉴权走 OIDC Trusted Publishing：不需要任何长期 token，也不需要 OTP。
+#
+# 使用前需在 npmjs.com 配置一次（Package → Settings → Trusted Publisher → GitHub Actions）：
+#   Organization or user : hmr-BH
+#   Repository           : dsh-round-rightclick
+#   Workflow filename    : release.yml
+#   Environment          : 留空
+#   Allowed actions      : npm publish
+#
+# 发版步骤：改 package.json 的 version → 提交 → 打 tag（形如 v0.2.0）→ 推送 tag →
+# 在 GitHub 上创建并发布对应 Release → 本工作流自动校验并发布到 npm。
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the released revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.ref }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+
+      - name: Show toolchain versions
+        run: |
+          node --version
+          npm --version
+          pnpm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify the release tag matches package.json
+        run: |
+          pkg_version="$(node -p "require('./package.json').version")"
+          tag="${{ github.event.release.tag_name || github.ref_name }}"
+          if [ "v${pkg_version}" != "${tag}" ]; then
+            echo "::error::release tag '${tag}' does not match package.json version 'v${pkg_version}'. Bump package.json before tagging."
+            exit 1
+          fi
+          echo "Tag ${tag} matches package.json version ${pkg_version}."
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
