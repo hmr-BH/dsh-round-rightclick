@@ -1,6 +1,6 @@
 # dsh-round-rightclick
 
-为 DeepSeek Harness（DSH）Web 提供圆盘式右键菜单：在对话的具体轮次上点击右键，即可在光标位置执行常用会话操作。
+为 DeepSeek Harness 提供圆盘式右键菜单：在对话的具体轮次上点击右键，即可在光标位置执行常用会话操作。
 
 [English](README.en.md) · [更新记录](CHANGELOG.md)
 
@@ -23,13 +23,9 @@ DSH 的会话操作分散在页面各处。工作目录需要在侧栏中查找�
 
 在第 1 轮上分叉，新会话只包含第 1 轮；在第 2 轮上分叉，新会话包含第 1、2 轮。源会话保持不变，两个会话可以并行对照。对话方向偏离时，从偏离前的那一轮重新开始即可，不必在新会话中重新提供上下文。
 
-分叉边界取自该轮 `turn/end` 事件的序号，而非鼠标坐标或会话中的最后一条消息，因此分叉结果严格等于所点击的那一轮。该轮仍在生成、或结束事件尚未加载时，动作置灰并说明原因，不会退化为「复制整个会话」——后者会得到错误的分叉结果，且不给出任何提示。
-
-## 界面
+## 截图
 
 ![圆盘菜单](assets/screenshots/radial-menu.png)
-
-默认直径 240 CSS 像素。视口较小时圆盘自动缩小并向内偏移，不会被裁切。中心按钮显示当前锁定的轮次，点击可关闭菜单。操作结果以页面顶部提示条反馈：绿色对勾表示成功，红色感叹号表示失败，提示文字说明后续动作。
 
 ## 六个动作
 
@@ -79,20 +75,6 @@ dsh plugin --profile web remove dsh-round-rightclick
 - 动作执行期间菜单锁定，重复点击不会发出第二次请求。
 - 输入框、`contenteditable` 等可编辑区域保留浏览器原生右键菜单，插件不接管这些区域。
 
-## 环境要求与已知限制
-
-- DSH Web。分叉契约在开发时针对本机安装的 `@deepseek-ai/dsh-api-session-controller` `0.1.2-rc.1` 验证（`scripts/verify-installed-dsh.mjs`）；宿主版本不同时应重新执行该脚本。
-- Node.js `^22.19.0` 或 `>=24.0.0`，仅源码安装需要；构建使用 pnpm。
-- 浏览器需支持 SVG、CSS `clip-path` 与 Clipboard API。
-- Windows 已完成本机验证。macOS 与 Linux 的文件管理器命令有测试覆盖，但尚未实机验收，若「打开目录」在这两个平台上异常，可提交 issue。
-- 仅注入 Web 页面，不提供 TUI 菜单。
-
-## 隐私
-
-无遥测、无广告、不连接远程服务、不需要额外 API Key。所有动作均在用户点击后执行：读取一次当前会话快照，随后请求宿主打开目录、打断、分叉或导出，或向浏览器剪贴板写入文本。
-
-导出的日志包含完整对话与工具输出，对外发送前应检查内容。
-
 ## 常见问题
 
 **右键无响应。** 确认插件安装在 `web` profile 下，重启 `dsh web` 并刷新页面。此外需要点击对话内容，输入框区域被有意排除。
@@ -110,12 +92,6 @@ pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
 node scripts/package-release.mjs
-```
-
-47 项测试覆盖菜单动作、轮次解析、宿主路由、剪贴板反馈与组件交互。本机安装 DSH 后，可针对真实宿主执行分叉契约检查：
-
-```sh
-node scripts/verify-installed-dsh.mjs "path/to/installed/@deepseek-ai/dsh"
 ```
 
 代码结构：

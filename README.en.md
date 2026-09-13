@@ -1,6 +1,6 @@
 # dsh-round-rightclick
 
-A radial right-click menu for DeepSeek Harness (DSH) Web. Right-click a specific turn in the conversation to run common session actions at the cursor.
+A radial right-click menu for DeepSeek Harness. Right-click a specific turn in the conversation to run common session actions at the cursor.
 
 [简体中文](README.md) · [Changelog](CHANGELOG.md)
 
@@ -23,13 +23,9 @@ Turn 3: polish the copy
 
 Forking turn 1 produces a session containing only turn 1; forking turn 2 produces one containing turns 1–2. The source session is left unchanged, so both can stay open for comparison. When a conversation drifts, work resumes from the turn before the drift instead of re-supplying context to a blank session.
 
-The fork boundary is derived from the sequence number of that turn's `turn/end` event, not from the pointer position or the last event in the session, so the result is exactly the turn that was clicked. If the turn is still generating, or its end event has not loaded, the action is disabled and states why. It never degrades into "copy the whole session", which would produce an incorrect fork with no indication of the error.
-
-## Interface
+## Screenshot
 
 ![Radial menu](assets/screenshots/radial-menu.png)
-
-The default diameter is 240 CSS pixels. On small viewports the wheel shrinks and shifts inward rather than being clipped. The centre button shows which turn is currently locked in, and clicking it closes the menu. Results appear as a notification at the top of the page: a green check for success, a red warning for failure, with text describing the next step.
 
 ## The six actions
 
@@ -79,20 +75,6 @@ dsh plugin --profile web remove dsh-round-rightclick
 - The menu is locked while an action runs; repeated clicks do not issue a second request.
 - Inputs, `contenteditable` regions, and other editable controls keep the browser's native context menu. The plugin does not take over these areas.
 
-## Requirements and known limits
-
-- DSH Web. The fork contract was verified during development against a locally installed `@deepseek-ai/dsh-api-session-controller` `0.1.2-rc.1` using `scripts/verify-installed-dsh.mjs`. Re-run that script when the host version differs.
-- Node.js `^22.19.0` or `>=24.0.0`, required for source installs only. Builds use pnpm.
-- A browser supporting SVG, CSS `clip-path`, and the Clipboard API.
-- Windows has been verified locally. The macOS and Linux file-manager commands have test coverage but no on-device acceptance run; if Open folder misbehaves on either platform, an issue would be useful.
-- Web page injection only. No TUI menu is provided.
-
-## Privacy
-
-No telemetry, no advertising, no remote service, and no additional API key. Every action runs only after a user click: it reads one snapshot of the current session, then asks the host to open a folder, interrupt, fork, or export, or writes text to the browser clipboard.
-
-Exported logs contain the full conversation and tool output. Review them before sharing.
-
 ## Troubleshooting
 
 **Right-click does nothing.** Confirm the plugin is installed under the `web` profile, restart `dsh web`, and refresh the page. The click must land on conversation content; the composer is deliberately excluded.
@@ -110,12 +92,6 @@ pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
 node scripts/package-release.mjs
-```
-
-47 tests cover menu actions, turn resolution, host routing, clipboard feedback, and component interaction. With DSH installed locally, the fork contract check can also run against the real host:
-
-```sh
-node scripts/verify-installed-dsh.mjs "path/to/installed/@deepseek-ai/dsh"
 ```
 
 Code layout:
