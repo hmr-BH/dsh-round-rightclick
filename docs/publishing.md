@@ -6,7 +6,7 @@
 
 目标仓库为 `hmr-BH/dsh-round-rightclick`，首版为 `v0.1.0`。README 已包含两张无头浏览器渲染的演示截图；图片使用合成会话数据，不暴露本地会话、账号信息或访问令牌。
 
-GitHub 仓库和 Release 地址会在发布完成后写入本文件；第三方社区目录仍需要按各自规则单独提交。
+GitHub 仓库：`https://github.com/hmr-BH/dsh-round-rightclick`。`v0.1.0` Release：`https://github.com/hmr-BH/dsh-round-rightclick/releases/tag/v0.1.0`。第三方社区目录仍需要按各自规则单独提交。
 
 ## 1. 完成首版素材
 
@@ -104,3 +104,4 @@ npm publish ./dist/dsh-round-rightclick-0.1.0.tgz --access public
 - [GitHub topic 市场的收录与安装规范](https://github.com/bradeGithub/DSH-Plugins-Marketplace/blob/8dbeea103ba719f1538864730acff2b226c3582a/STANDARD.md)
 - [StarPivot npm-only 目录规则](https://github.com/StarPivotNet/dsh-plugin-catalog/blob/7b6d3fb11de25a6499f7020100e437d96f662de5/README.md)
 - [dsh-skin-market 的定位](https://github.com/kingOfSoySauce/dsh-skin-market/blob/c644db9dd97f485f8576b5f5a007e4d609dd8755/README.md)
+
