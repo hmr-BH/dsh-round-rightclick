@@ -51,10 +51,10 @@ Restart `dsh web` and refresh the page. The npm package ships built output, so n
 
 ### From a release tarball
 
-Download `dsh-round-rightclick-0.1.0.tgz` from [Releases](https://github.com/hmr-BH/dsh-round-rightclick/releases), then run:
+Download the `.tgz` attached to the relevant [Release](https://github.com/hmr-BH/dsh-round-rightclick/releases), then run:
 
 ```sh
-dsh plugin --profile web add ./dsh-round-rightclick-0.1.0.tgz
+dsh plugin --profile web add ./dsh-round-rightclick-<version>.tgz
 ```
 
 Restart `dsh web` and refresh the page. The tarball contains built output as well.

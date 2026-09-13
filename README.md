@@ -51,10 +51,10 @@ dsh plugin --profile web add dsh-round-rightclick
 
 ### Release 包安装
 
-从 [Releases](https://github.com/hmr-BH/dsh-round-rightclick/releases) 下载 `dsh-round-rightclick-0.1.0.tgz`，然后执行：
+从 [Releases](https://github.com/hmr-BH/dsh-round-rightclick/releases) 下载对应版本附带的 `.tgz`，然后执行：
 
 ```sh
-dsh plugin --profile web add ./dsh-round-rightclick-0.1.0.tgz
+dsh plugin --profile web add ./dsh-round-rightclick-<版本>.tgz
 ```
 
 重启 `dsh web` 并刷新页面。tarball 内同样已含构建产物。

@@ -1,6 +1,6 @@
 {
   "name": "dsh-round-rightclick",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness 圆盘快捷菜单：按轮次分叉、打断生成、复制路径与会话 ID、打开目录和导出日志。",
   "author": "hmr-BH",
   "repository": {
