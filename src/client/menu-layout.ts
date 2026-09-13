@@ -1,5 +1,5 @@
 /** 圆盘默认直径，单位为 CSS 像素。 */
-export const MENU_SIZE = 240
+export const MENU_SIZE = 200
 /** 中心取消按钮的半径与圆盘直径之比。 */
 export const INNER_RATIO = 0.18
 /** 操作区域的外半径与圆盘直径之比，外侧预留装饰环。 */
