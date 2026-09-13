@@ -1,0 +1,12 @@
+node_modules/
+lib/
+coverage/
+*.log
+.DS_Store
+.idea/
+.pnpm-store/
+dist/
+artifacts/
+*.tsbuildinfo
+.venv/
+__pycache__/
