@@ -5,7 +5,6 @@
 [English](README.md) · [发布指南](docs/publishing.md) · [更新记录](CHANGELOG.md)
 
 ![版本](https://img.shields.io/github/v/release/hmr-BH/dsh-round-rightclick?display_name=tag&sort=semver)
-![构建](https://img.shields.io/github/actions/workflow/status/hmr-BH/dsh-round-rightclick/ci.yml?label=build)
 ![许可证](https://img.shields.io/github/license/hmr-BH/dsh-round-rightclick)
 
 ## 解决什么问题

@@ -5,7 +5,6 @@ A compact, keyboard-friendly radial context menu for DeepSeek Harness (DSH) Web.
 [简体中文](README.zh.md) · [Publishing guide](docs/publishing.md) · [Changelog](CHANGELOG.md)
 
 ![Release](https://img.shields.io/github/v/release/hmr-BH/dsh-round-rightclick?display_name=tag&sort=semver)
-![Build](https://img.shields.io/github/actions/workflow/status/hmr-BH/dsh-round-rightclick/ci.yml?label=build)
 ![License](https://img.shields.io/github/license/hmr-BH/dsh-round-rightclick)
 
 ## Why this plugin exists
