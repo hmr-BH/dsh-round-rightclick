@@ -1,6 +1,6 @@
 # 更新记录
 
-## 未发布
+## 0.2.0（2026-10-07）
 
 - 修复 DSH 0.2.0 桌面上右键无响应：会话列表快照不再提供 current 字段，改为按主视图占用标记（retainedBy.mainView）确定当前会话。
 - 修复分叉后无法打开子会话：宿主已移除 sessions.open，改为经主视图服务 uiWorkspace.openSession 导航。
