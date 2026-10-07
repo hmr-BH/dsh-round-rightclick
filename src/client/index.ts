@@ -40,10 +40,14 @@ export interface ClientContext {
 
 interface SessionsFace {
   fork(opts: { sessionId: string; atSeq?: number; increaseTitle?: boolean }): Promise<string>
-  open?(id: string): void
   scope(id: string): unknown
   sessionOf(scoped: unknown): { cancel(): Promise<unknown> } | undefined
   binding?(id: string): SessionBindingLike | undefined
+}
+
+/** 主视图导航服务：新会话创建后由它切换到主视图。 */
+interface UiWorkspaceFace {
+  openSession(id: string): void
 }
 
 interface SessionEventSourceLike {
@@ -116,9 +120,12 @@ export function createActionDeps(ctx: ClientContext): ActionDeps {
     },
     fork: async (sessionId, atSeq) => {
       if (atSeq === undefined || !Number.isSafeInteger(atSeq) || atSeq < 0) throw new Error('A completed turn is required')
-      if (typeof ctx.sessions.open !== 'function') throw new Error('Session navigation is unavailable')
+      const workspace = ctx.get?.('uiWorkspace') as UiWorkspaceFace | undefined
+      if (workspace === undefined || typeof workspace.openSession !== 'function') {
+        throw new Error('Session navigation is unavailable')
+      }
       const childId = await ctx.sessions.fork({ sessionId, atSeq, increaseTitle: true })
-      ctx.sessions.open(childId)
+      workspace.openSession(childId)
     },
     resolveForkTarget: (sessionId, target) => {
       const conversation = ctx.get?.('uiConversation') as UiConversationFace | undefined

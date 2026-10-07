@@ -52,11 +52,26 @@ function fakeDeps() {
 }
 
 const list: SessionListLike = {
-  current: 's1',
-  byId: { s1: { cwd: '/work/app', running: false } },
+  byId: { s1: { cwd: '/work/app', running: false, retainedBy: { mainView: 1 } } },
 }
 
 describe('RadialMenu', () => {
+  it('opens for the session the main view holds, without a list-level current field', () => {
+    const deps = fakeDeps()
+    const surface = renderMenu(list, deps)
+    openAt(surface.querySelector('#transcript')!)
+    expect(document.querySelector('[data-dsh-rr-pie]')).not.toBeNull()
+  })
+
+  it('ignores right-clicks while no session is held by the main view', () => {
+    const deps = fakeDeps()
+    const surface = renderMenu({
+      byId: { s1: { cwd: '/work/app', running: false, retainedBy: { gateway: 1 } } },
+    }, deps)
+    openAt(surface.querySelector('#transcript')!)
+    expect(document.querySelector('[data-dsh-rr-pie]')).toBeNull()
+  })
+
   it('ignores right-button release and retains focus for keyboard navigation', async () => {
     const deps = fakeDeps()
     const before = document.createElement('button')

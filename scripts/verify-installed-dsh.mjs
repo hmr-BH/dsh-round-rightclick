@@ -14,17 +14,22 @@ let client
 const bundle = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
 new Function('window', bundle)({ __ModuleLoader__: { load: handoff => { client = handoff.factory(localRequire) } } })
 
+/** 构造宿主的 assistant/message 事件数据：文本块位于 data.message.content 内。 */
+function assistantData(turn, step, text) {
+  return { turn, step, message: { content: [{ type: 'text', text }] } }
+}
+
 const entries = [
   ['turn/start', { turn: 1 }],
-  ['user/message', { content: '第一轮提问' }],
-  ['assistant/message', { content: '第一轮回复' }],
+  ['user/message', { turn: 1, step: 0, content: '第一轮提问' }],
+  ['assistant/message', assistantData(1, 0, '第一轮回复')],
   ['turn/end', { turn: 1 }],
   ['turn/start', { turn: 2 }],
-  ['user/message', { content: '第二轮提问' }],
-  ['assistant/message', { content: '第二轮回复' }],
+  ['user/message', { turn: 2, step: 0, content: '第二轮提问' }],
+  ['assistant/message', assistantData(2, 0, '第二轮回复')],
   ['turn/end', { turn: 2 }],
   ['turn/start', { turn: 3 }],
-  ['user/message', { content: '尚未完成的第三轮' }],
+  ['user/message', { turn: 3, step: 0, content: '尚未完成的第三轮' }],
 ].map(([type, data], seq) => ({ type: 'event', event: { type, data, seq, time: seq } }))
 const events = entries.map(entry => entry.event)
 const originalEvents = structuredClone(events)
@@ -53,10 +58,12 @@ const deps = client.createActionDeps({
       const child = await controller.fork(options)
       return child.sessionId
     },
-    open: id => { opened.push(id) },
     binding: () => ({ eventSource: { getSnapshot: () => ({ entries }) } }),
   },
-  get: key => key === 'uiConversation' ? {
+  // 分叉后的导航由主视图服务承担，sessions 服务不再提供 open。
+  get: key => key === 'uiWorkspace' ? {
+    openSession: id => { opened.push(id) },
+  } : key === 'uiConversation' ? {
     binding: () => ({ target: () => ({ getSnapshot: () => ({ nodes: {
       get: key => key === 'first-question' ? { anchorSeq: 1, location: { kind: 'session' } } : undefined,
     } }) }) }),
@@ -73,7 +80,11 @@ for (const [target, expectedTurn, expectedCount] of [
   assert.equal(forkTarget.turn, expectedTurn)
   await client.runAction('fork', { sessionId: 'fixture-source', cwd: 'fixture-workspace', running: false, forkTarget }, deps)
   const created = creations.at(-1)
-  assert.deepEqual(created.seed, events.slice(0, expectedCount))
+  // 宿主在继承前缀之后写入一条 session/end-seed 标记；被继承的事件必须恰好是请求的前缀。
+  assert.deepEqual(created.seed.slice(0, expectedCount), events.slice(0, expectedCount))
+  assert.equal(created.seed.length, expectedCount + 1)
+  assert.equal(created.seed[expectedCount].type, 'session/end-seed')
+  assert.deepEqual(created.seed[expectedCount].data, { inherited: true })
   assert.equal(created.inheritedEventCount, expectedCount)
   assert.equal(created.meta.parentSession, 'fixture-source')
   assert.equal(opened.at(-1), created.sessionId)

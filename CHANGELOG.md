@@ -1,5 +1,11 @@
 # 更新记录
 
+## 未发布
+
+- 修复 DSH 0.2.0 桌面上右键无响应：会话列表快照不再提供 current 字段，改为按主视图占用标记（retainedBy.mainView）确定当前会话。
+- 修复分叉后无法打开子会话：宿主已移除 sessions.open，改为经主视图服务 uiWorkspace.openSession 导航。
+- 宿主契约校验脚本跟进 0.2.0 的事件结构（assistant/message 文本位于 data.message.content）与分叉前缀后的 session/end-seed 标记。
+
 ## 0.1.1（2026-09-13）
 
 - 圆盘直径由 240 像素调整为 200 像素，减少对对话内容的遮挡。

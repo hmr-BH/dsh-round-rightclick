@@ -17,11 +17,23 @@ import { conversationTarget, isSessionConversationSurface } from './surface.ts'
 import { MenuIcon } from './Icons.tsx'
 import { INNER_RATIO, labelPosition, placeMenu, sectorClip, type MenuPlacement } from './menu-layout.ts'
 
-/** 菜单从会话列表读取的数据：当前会话 ID、工作目录和运行状态。 */
-export interface SessionListLike {
-  readonly current: string | undefined
-  readonly byId: Readonly<Record<string, { readonly cwd?: string; readonly running?: boolean } | undefined>>
+/** 会话列表中的一行；菜单只读取工作目录、运行状态和占用来源计数。 */
+export interface SessionRowLike {
+  readonly cwd?: string
+  readonly running?: boolean
+  readonly retainedBy?: Readonly<Record<string, number | undefined>>
 }
+
+/** 菜单从会话列表读取的数据：全部会话行，当前会话由主视图占用标记确定。 */
+export interface SessionListLike {
+  readonly byId: Readonly<Record<string, SessionRowLike | undefined>>
+}
+
+/**
+ * 主视图持有会话时使用的占用来源键。
+ * 会话列表不再提供单一的 current 字段，主视图正在显示的会话由该来源的引用计数标记。
+ */
+const MAIN_VIEW_RETAIN_SOURCE = 'mainView'
 
 /** 菜单组件需要的会话订阅函数和操作函数。 */
 export interface RadialMenuProps {
@@ -31,8 +43,20 @@ export interface RadialMenuProps {
 
 const SECTORS = PIE_ACTION_IDS.map((id, index) => ({ id, clip: sectorClip(index), position: labelPosition(index) }))
 
+/**
+ * 找出主视图正在显示的会话。
+ * @param list - 当前会话列表快照
+ * @returns 主视图占用的会话 ID；没有会话被主视图占用时返回 undefined
+ */
+function mainViewSessionId(list: SessionListLike): string | undefined {
+  for (const [id, row] of Object.entries(list.byId)) {
+    if ((row?.retainedBy?.[MAIN_VIEW_RETAIN_SOURCE] ?? 0) > 0) return id
+  }
+  return undefined
+}
+
 function readState(list: SessionListLike): ActionState {
-  const sessionId = list.current
+  const sessionId = mainViewSessionId(list)
   const row = sessionId === undefined ? undefined : list.byId[sessionId]
   return {
     sessionId,

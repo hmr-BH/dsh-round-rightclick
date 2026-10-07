@@ -71,10 +71,10 @@ describe('client apply', () => {
 describe('createActionDeps', () => {
   it('rejects invalid boundaries and unavailable navigation before creating any child', async () => {
     const { ctx, dispose } = boot()
-    ctx.sessions.open = vi.fn()
+    ctx.get = key => key === 'uiWorkspace' ? { openSession() {} } : undefined
     const deps = createActionDeps(ctx)
     for (const seq of [-1, NaN, 1.5, Infinity]) await expect(deps.fork('s1', seq)).rejects.toThrow()
-    delete ctx.sessions.open
+    ctx.get = () => undefined
     await expect(deps.fork('s1', 42)).rejects.toThrow('navigation')
     expect(ctx.sessions.fork).not.toHaveBeenCalled()
     dispose()
@@ -118,33 +118,33 @@ describe('createActionDeps', () => {
     dispose()
   })
 
-  it('passes the exact boundary to sessions.fork and opens the child, even with uiWorkspace present', async () => {
+  it('passes the exact boundary to sessions.fork and opens the child in the main view', async () => {
     const sessionsFork = vi.fn(async () => 'child')
-    const open = vi.fn()
+    const openSession = vi.fn()
     const workspaceFork = vi.fn(async () => {})
     const withWs: ClientContext = {
       effect() {},
       get(key) {
-        if (key === 'uiWorkspace') return { forkSession: workspaceFork }
+        if (key === 'uiWorkspace') return { forkSession: workspaceFork, openSession }
         return undefined
       },
       slots: { inject() {}, register() { return () => {} } },
       sessions: {
         fork: sessionsFork,
-        open,
         scope() { return undefined },
         sessionOf() { return undefined },
       },
       locale: { register() { return () => {} } },
     }
     await createActionDeps(withWs).fork('s1', 42)
+    // 分叉边界只由 sessions.fork 承担，uiWorkspace.forkSession 不接受边界参数。
     expect(workspaceFork).not.toHaveBeenCalled()
     expect(sessionsFork).toHaveBeenCalledWith({ sessionId: 's1', atSeq: 42, increaseTitle: true })
-    expect(open).toHaveBeenCalledWith('child')
+    expect(openSession).toHaveBeenCalledWith('child')
 
     const withoutWs: ClientContext = { ...withWs, get() { return undefined } }
-    await createActionDeps(withoutWs).fork('s1', 42)
-    expect(sessionsFork).toHaveBeenCalledWith({ sessionId: 's1', atSeq: 42, increaseTitle: true })
+    await expect(createActionDeps(withoutWs).fork('s1', 42)).rejects.toThrow('navigation')
+    expect(sessionsFork).toHaveBeenCalledOnce()
   })
 
   it('cancel uses sessions.scope then sessionOf().cancel', async () => {
