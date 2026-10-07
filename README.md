@@ -49,6 +49,14 @@ dsh plugin --profile web add dsh-round-rightclick
 
 重启 `dsh web` 并刷新页面。npm 包内已含构建产物，无需安装 pnpm，也无需本地编译；预构建发布也不会触发构建授权。
 
+### GitHub 安装
+
+```sh
+dsh plugin --profile web add github:hmr-BH/dsh-round-rightclick
+```
+
+重启 `dsh web` 并刷新页面。仓库内已提交 `lib/` 构建产物，安装时不需要运行构建脚本，也不会触发 pnpm 的构建授权。
+
 ### Release 包安装
 
 从 [Releases](https://github.com/hmr-BH/dsh-round-rightclick/releases) 下载对应版本附带的 `.tgz`，然后执行：
@@ -102,6 +110,8 @@ pnpm typecheck
 pnpm test
 node scripts/package-release.mjs
 ```
+
+`lib/` 构建产物需要提交进仓库，GitHub 源安装直接使用它：改动 `src/` 后先运行 `pnpm run build` 再提交，避免仓库里的产物过期。
 
 代码结构：
 

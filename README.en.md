@@ -49,6 +49,14 @@ dsh plugin --profile web add dsh-round-rightclick
 
 Restart `dsh web` and refresh the page. The npm package ships built output, so neither pnpm nor a local build is required; a prebuilt publish does not trigger a build approval either.
 
+### From GitHub
+
+```sh
+dsh plugin --profile web add github:hmr-BH/dsh-round-rightclick
+```
+
+Restart `dsh web` and refresh the page. The repo commits its built `lib/` bundles, so installing runs no build script and needs no pnpm build approval.
+
 ### From a release tarball
 
 Download the `.tgz` attached to the relevant [Release](https://github.com/hmr-BH/dsh-round-rightclick/releases), then run:
@@ -102,6 +110,8 @@ pnpm typecheck
 pnpm test
 node scripts/package-release.mjs
 ```
+
+The built `lib/` bundles are committed for GitHub-source installs: run `pnpm run build` after touching `src/` and commit before pushing, so the repo never ships stale output.
 
 Code layout:
 
