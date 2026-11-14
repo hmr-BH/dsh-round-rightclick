@@ -12,7 +12,7 @@ A radial right-click menu for DeepSeek Harness. Right-click a specific turn in t
 
 Session actions in DSH are spread across the interface. The workspace folder has to be found in a sidebar, interrupting generation requires catching the right moment, and branching from an earlier turn is not available at all — the only option is copying the preceding conversation into a new session by hand and verifying nothing was missed.
 
-The radial menu collects these actions in one place. Right-click a specific question or answer and six actions are arranged around the cursor, selectable by mouse or keyboard.
+The radial menu collects these actions in one place. Right-click a specific question or answer and six actions are arranged around the cursor, selectable by mouse or keyboard. Select text in the conversation first and a seventh action, **Copy selection**, joins the wheel.
 
 The central action is **Fork this turn**. Take a session with three completed turns:
 
@@ -28,12 +28,15 @@ Forking turn 1 produces a session containing only turn 1; forking turn 2 produce
 
 ![Radial menu](assets/screenshots/radial-menu.png)
 
-## The six actions
+## The seven actions
+
+Six actions are always shown; **Copy selection** appears only when the conversation contains a selection, hence the seven rows below.
 
 | Action | Purpose | Available when |
 | --- | --- | --- |
 | Open folder | Opens the session's workspace in the OS file manager | The session has a directory and DSH runs locally |
 | Copy path | Writes the full workspace path to the clipboard | The browser permits clipboard writes |
+| Copy selection | Copies the text currently selected in the conversation | Text is selected inside the conversation |
 | Copy session ID | Copies the current session's ID | A session is open |
 | Interrupt | Stops the running generation or tool call, keeping the conversation | The session is running |
 | Fork this turn | Creates a branch session carrying the conversation through that turn | The turn is complete and loaded |
@@ -86,6 +89,7 @@ dsh plugin --profile web remove dsh-round-rightclick
 ## Interaction
 
 - Right-click a completed question or answer to open the wheel.
+- Select text in the conversation before right-clicking and **Copy selection** appears as an extra sector; selections in inputs and the composer never trigger it.
 - Left-click a sector to run it, or navigate with the arrow keys and press Enter.
 - Releasing the right button never fires an action, so holding it while moving across sectors is safe.
 - Escape, Tab, page scrolling, window blur, window resizing, and clicking outside the wheel all close the menu.

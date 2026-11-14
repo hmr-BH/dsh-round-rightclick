@@ -15,8 +15,8 @@ import { resolveTurnFork, type HistoryEntry } from './fork-target.ts'
 
 export { RadialMenu } from './RadialMenu.tsx'
 export { hitTestPie, sliceCssMidDegrees, sliceCssSpanDegrees, sliceMidAngle } from './pie.ts'
-export { isActionEnabled, runAction, PIE_ACTION_IDS, downloadSessionExport } from './actions.ts'
-export { isSessionConversationSurface } from './surface.ts'
+export { isActionEnabled, menuActions, runAction, PIE_ACTION_IDS, downloadSessionExport } from './actions.ts'
+export { isSessionConversationSurface, selectedConversationText } from './surface.ts'
 export { OPEN_DIR_ROUTE, OVERLAY_ID } from '../shared.ts'
 
 export const inject = ['slots', 'sessions', 'locale']

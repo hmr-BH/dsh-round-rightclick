@@ -6,6 +6,7 @@ export type IconName = PieActionId | 'close' | 'check' | 'error' | 'loading' | '
 const PATHS: Record<IconName, string> = {
   'open-dir': 'M3 8V5a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v2 M3 9h18l-3 11H3Z',
   'copy-cwd': 'M9 9h11v11H9Z M15 6V3H3v12h3',
+  'copy-selection': 'M8 4H5a1 1 0 0 0-1 1v3 M16 4h3a1 1 0 0 1 1 1v3 M20 16v3a1 1 0 0 1-1 1h-3 M8 20H5a1 1 0 0 1-1-1v-3 M8 8h8 M8 12h8 M8 16h5',
   'copy-session-id': 'M9 3 7 21 M17 3 15 21 M4 9h17 M3 15h17',
   stop: 'M8 4v8 M12 3v8 M16 5v7 M8 9V6a2 2 0 0 0-4 0v7l4 7h8l4-8a2 2 0 0 0-3-2l-1 2',
   fork: 'M6 7v10 M6 11c10 0 12-2 12-4 M4 3h4v4H4Z M4 17h4v4H4Z M16 3h4v4h-4Z',

@@ -11,18 +11,21 @@ export type MenuCopy = Record<CopyKey, string>
 
 /** 简体中文操作文案。 */
 export const zh: MenuCopy = {
-  'open-dir': '打开目录', 'copy-cwd': '复制路径', 'copy-session-id': '复制会话 ID',
-  stop: '打断', fork: '从此轮分叉', export: '导出日志',
+  'open-dir': '打开目录', 'copy-cwd': '复制路径', 'copy-selection': '复制选中\n文本',
+  'copy-session-id': '复制会话 ID', stop: '打断', fork: '从此轮分叉', export: '导出日志',
   'open-dir.description': '在系统文件管理器中打开此会话的工作目录',
   'copy-cwd.description': '复制此会话工作目录的完整路径',
+  'copy-selection.description': '复制对话中当前选中的文本',
   'copy-session-id.description': '复制此会话的唯一 ID',
   'stop.description': '打断当前生成或工具执行，保留已有对话',
   'fork.description': '保留截至第 {turn} 轮的完整对话，并打开新的分支会话',
   'export.description': '下载此会话及子会话的日志 ZIP 文件',
   'open-dir.success': '已请求打开工作目录', 'copy-cwd.success': '工作目录路径已复制',
+  'copy-selection.success': '选中文本已复制',
   'copy-session-id.success': '会话 ID 已复制', 'stop.success': '已发送打断请求',
   'fork.success': '已从第 {turn} 轮创建并打开分支会话', 'export.success': '已开始下载会话日志',
   'open-dir.pending': '正在打开工作目录…', 'copy-cwd.pending': '正在复制路径…',
+  'copy-selection.pending': '正在复制选中文本…',
   'copy-session-id.pending': '正在复制会话 ID…', 'stop.pending': '正在请求打断…',
   'fork.pending': '正在从第 {turn} 轮创建分支…', 'export.pending': '正在准备会话日志…',
   menu: '会话快捷菜单', choose: '选择操作', cancel: '关闭菜单', keys: '方向键选择 · Enter 执行 · Esc 关闭',
@@ -36,18 +39,21 @@ export const zh: MenuCopy = {
 
 /** 英文操作文案。 */
 export const en: MenuCopy = {
-  'open-dir': 'Open folder', 'copy-cwd': 'Copy path', 'copy-session-id': 'Copy session ID',
-  stop: 'Interrupt', fork: 'Fork this turn', export: 'Export log',
+  'open-dir': 'Open folder', 'copy-cwd': 'Copy path', 'copy-selection': 'Copy selection',
+  'copy-session-id': 'Copy session ID', stop: 'Interrupt', fork: 'Fork this turn', export: 'Export log',
   'open-dir.description': 'Open this session’s workspace in your file manager',
   'copy-cwd.description': 'Copy the full workspace directory path',
+  'copy-selection.description': 'Copy the text currently selected in the conversation',
   'copy-session-id.description': 'Copy this session’s unique ID',
   'stop.description': 'Interrupt generation or tool execution and keep the conversation',
   'fork.description': 'Keep the conversation through turn {turn} and open a new branch',
   'export.description': 'Download this session and its children as a log ZIP',
   'open-dir.success': 'Requested to open the workspace', 'copy-cwd.success': 'Workspace path copied',
+  'copy-selection.success': 'Selected text copied',
   'copy-session-id.success': 'Session ID copied', 'stop.success': 'Interrupt requested',
   'fork.success': 'Created and opened a branch from turn {turn}', 'export.success': 'Session log download started',
   'open-dir.pending': 'Opening workspace…', 'copy-cwd.pending': 'Copying path…',
+  'copy-selection.pending': 'Copying selected text…',
   'copy-session-id.pending': 'Copying session ID…', 'stop.pending': 'Requesting interruption…',
   'fork.pending': 'Creating a branch from turn {turn}…', 'export.pending': 'Preparing session log…',
   menu: 'Session shortcuts', choose: 'Choose action', cancel: 'Close menu', keys: 'Arrows to select · Enter to run · Esc to close',
@@ -100,7 +106,7 @@ export function actionDescription(id: PieActionId, state: ActionState, copy: Men
  * @returns 简明错误提示
  */
 export function actionError(error: unknown, id: PieActionId, copy: MenuCopy): string {
-  if (id === 'copy-cwd' || id === 'copy-session-id') return copy['clipboard-denied']
+  if (id === 'copy-cwd' || id === 'copy-selection' || id === 'copy-session-id') return copy['clipboard-denied']
   if (error instanceof TypeError) return copy['network-error']
   return `${copy[id]}：${copy.failed}`
 }

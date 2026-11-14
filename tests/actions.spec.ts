@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   downloadSessionExport,
   isActionEnabled,
+  menuActions,
   PIE_ACTION_IDS,
   runAction,
   sessionLogZipFilename,
@@ -29,15 +30,19 @@ const ready: ActionState = { sessionId: 'sess-1', cwd: '/work/app', running: tru
 const idle: ActionState = { sessionId: 'sess-1', cwd: '/work/app', running: false }
 const noCwd: ActionState = { sessionId: 'sess-1', cwd: '', running: false }
 const none: ActionState = { sessionId: undefined, cwd: '', running: false }
+const selected: ActionState = { ...ready, selection: 'selected text' }
 
 describe('isActionEnabled', () => {
-  it('gates each of the six slices on session/cwd/running', () => {
+  it('gates each of the slices on session/cwd/running/selection', () => {
     expect(PIE_ACTION_IDS).toEqual([
-      'open-dir', 'copy-cwd', 'copy-session-id', 'stop', 'fork', 'export',
+      'open-dir', 'copy-cwd', 'copy-selection', 'copy-session-id', 'stop', 'fork', 'export',
     ])
     expect(isActionEnabled('open-dir', ready)).toBe(true)
     expect(isActionEnabled('open-dir', noCwd)).toBe(false)
     expect(isActionEnabled('copy-cwd', ready)).toBe(true)
+    expect(isActionEnabled('copy-selection', selected)).toBe(true)
+    expect(isActionEnabled('copy-selection', ready)).toBe(false)
+    expect(isActionEnabled('copy-selection', { ...ready, selection: ' \n ' })).toBe(false)
     expect(isActionEnabled('copy-session-id', ready)).toBe(true)
     expect(isActionEnabled('copy-session-id', none)).toBe(false)
     expect(isActionEnabled('stop', ready)).toBe(true)
@@ -48,17 +53,33 @@ describe('isActionEnabled', () => {
   })
 })
 
+describe('menuActions', () => {
+  it('keeps the six base actions in order when no conversation text is selected', () => {
+    const six = ['open-dir', 'copy-cwd', 'copy-session-id', 'stop', 'fork', 'export']
+    expect(menuActions({})).toEqual(six)
+    expect(menuActions({ selection: '' })).toEqual(six)
+    expect(menuActions({ selection: '  \n\t ' })).toEqual(six)
+  })
+
+  it('inserts copy-selection after copy path when text is selected', () => {
+    expect(menuActions({ selection: 'hello' })).toEqual([
+      'open-dir', 'copy-cwd', 'copy-selection', 'copy-session-id', 'stop', 'fork', 'export',
+    ])
+  })
+})
+
 describe('runAction', () => {
-  it('dispatches the shipped six actions to the injected deps', async () => {
+  it('dispatches the shipped actions to the injected deps', async () => {
     const d = deps()
     await runAction('open-dir', ready, d)
     await runAction('copy-cwd', ready, d)
+    await runAction('copy-selection', selected, d)
     await runAction('copy-session-id', ready, d)
     await runAction('stop', ready, d)
     await runAction('fork', ready, d)
     await runAction('export', ready, d)
     expect(d.openDirectory).toHaveBeenCalledWith('/work/app')
-    expect(d.clipboardWrite.mock.calls).toEqual([['/work/app'], ['sess-1']])
+    expect(d.clipboardWrite.mock.calls).toEqual([['/work/app'], ['selected text'], ['sess-1']])
     expect(d.cancel).toHaveBeenCalledWith('sess-1')
     expect(d.fork).toHaveBeenCalledWith('sess-1', 42)
     expect(d.exportLog).toHaveBeenCalledWith('sess-1')
@@ -67,9 +88,11 @@ describe('runAction', () => {
   it('does not invoke deps when the slice is disabled', async () => {
     const d = deps()
     await runAction('open-dir', none, d)
+    await runAction('copy-selection', ready, d)
     await runAction('stop', idle, d)
     await runAction('fork', none, d)
     expect(d.openDirectory).not.toHaveBeenCalled()
+    expect(d.clipboardWrite).not.toHaveBeenCalled()
     expect(d.cancel).not.toHaveBeenCalled()
     expect(d.fork).not.toHaveBeenCalled()
   })

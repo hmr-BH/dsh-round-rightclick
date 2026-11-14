@@ -18,6 +18,7 @@ afterEach(() => {
   root = undefined
   host?.remove()
   host = undefined
+  document.getSelection()?.removeAllRanges()
   document.body.innerHTML = ''
   vi.useRealTimers()
 })
@@ -27,7 +28,8 @@ function renderMenu(list: SessionListLike, deps: ActionDeps): HTMLDivElement {
   document.body.appendChild(host)
   const surface = document.createElement('div')
   surface.setAttribute('data-phase', 'active')
-  surface.innerHTML = '<div data-conversation-scroll><p id="transcript">hi</p></div>'
+  surface.innerHTML = '<div data-conversation-scroll><p id="transcript">hi</p>'
+    + '<div data-composer-seat><div id="composer" contenteditable="true">draft</div></div></div>'
   document.body.appendChild(surface)
   root = createRoot(host)
   act(() => {
@@ -196,6 +198,37 @@ describe('RadialMenu', () => {
     expect(document.querySelector('[data-dsh-rr-toast]')?.getAttribute('data-kind')).toBe('success')
   })
 
+  it('adds copy-selected-text only when conversation text is selected, then copies it', async () => {
+    const deps = fakeDeps()
+    const surface = renderMenu(list, deps)
+    const transcript = surface.querySelector('#transcript')!
+    selectWithin(transcript, 0, 2)
+    openAt(transcript)
+    expect(document.querySelectorAll('[role="menuitem"]')).toHaveLength(7)
+    const copySelection = document.querySelector<HTMLButtonElement>('[data-action="copy-selection"]')!
+    expect(copySelection.getAttribute('title')).toBe('复制选中\n文本')
+    expect(copySelection.querySelector('[data-dsh-rr-icon="copy-selection"]')).not.toBeNull()
+    const labelText = copySelection.querySelector('[data-dsh-rr-text]') as HTMLElement
+    expect(labelText.textContent).toBe('复制选中\n文本')
+    expect(getComputedStyle(labelText).whiteSpace).toBe('pre-line')
+    act(() => copySelection.focus())
+    expect(document.querySelector('[data-dsh-rr-detail]')?.textContent).toContain('当前选中的文本')
+    await act(async () => copySelection.click())
+    expect(deps.clipboardWrite).toHaveBeenCalledExactlyOnceWith('hi')
+    expect(document.querySelector('[data-dsh-rr-pie]')).toBeNull()
+    expect(document.querySelector('[data-dsh-rr-toast]')?.getAttribute('data-kind')).toBe('success')
+    expect(document.querySelector('[data-dsh-rr-toast]')?.textContent).toBe('选中文本已复制')
+  })
+
+  it('keeps the six-action wheel when the selection is only in the composer', () => {
+    const deps = fakeDeps()
+    const surface = renderMenu(list, deps)
+    selectWithin(surface.querySelector('#composer')!, 0, 5)
+    openAt(surface.querySelector('#transcript')!)
+    expect(document.querySelectorAll('[role="menuitem"]')).toHaveLength(6)
+    expect(document.querySelector('[data-action="copy-selection"]')).toBeNull()
+  })
+
   it('dismisses on Escape and does not fire', () => {
     const deps = fakeDeps()
     const surface = renderMenu(list, deps)
@@ -237,4 +270,15 @@ function openAt(target: Element): void {
   act(() => target.dispatchEvent(new MouseEvent('contextmenu', {
     bubbles: true, cancelable: true, clientX: 220, clientY: 220,
   })))
+}
+
+/** 在指定元素内的文本节点上建立选区，模拟用户先选中文本再右键。 */
+function selectWithin(element: Element, start: number, end: number): void {
+  const range = document.createRange()
+  const node = element.firstChild as Text
+  range.setStart(node, start)
+  range.setEnd(node, end)
+  const selection = document.getSelection() as Selection
+  selection.removeAllRanges()
+  selection.addRange(range)
 }

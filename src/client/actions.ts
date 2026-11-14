@@ -5,10 +5,11 @@
 
 import type { ConversationTarget, ForkTarget } from './fork-target.ts'
 
-/** 六项操作的固定标识，从圆盘正上方开始顺时针排列。 */
+/** 菜单操作的固定顺序，从圆盘正上方开始顺时针排列；复制选中文本仅在选区存在时加入。 */
 export const PIE_ACTION_IDS = [
   'open-dir',
   'copy-cwd',
+  'copy-selection',
   'copy-session-id',
   'stop',
   'fork',
@@ -18,12 +19,28 @@ export const PIE_ACTION_IDS = [
 /** 一项菜单操作的标识。 */
 export type PieActionId = (typeof PIE_ACTION_IDS)[number]
 
-/** 判断操作可用性所需的会话状态，以及右键命中的分叉位置。 */
+/** 判断操作可用性所需的会话状态、右键命中的分叉位置和打开菜单时锁定的选区文本。 */
 export interface ActionState {
   readonly sessionId: string | undefined
   readonly cwd: string
   readonly running: boolean
   readonly forkTarget?: ForkTarget
+  readonly selection?: string
+}
+
+/** 判断快照中是否存在可复制的选区文本。 */
+function hasSelection(state: Pick<ActionState, 'selection'>): boolean {
+  return state.selection !== undefined && state.selection.trim() !== ''
+}
+
+/**
+ * 获取本次圆盘实际显示的操作；没有选中对话文本时不显示「复制选中文本」。
+ * @param state - 打开菜单时锁定的会话快照
+ * @returns 按固定顺序排列的可见操作
+ */
+export function menuActions(state: Pick<ActionState, 'selection'>): readonly PieActionId[] {
+  if (hasSelection(state)) return PIE_ACTION_IDS
+  return PIE_ACTION_IDS.filter(id => id !== 'copy-selection')
 }
 
 /** 菜单操作函数，由浏览器入口连接到文件管理器、剪贴板和会话服务。 */
@@ -47,6 +64,8 @@ export function isActionEnabled(id: PieActionId, state: ActionState): boolean {
     case 'open-dir':
     case 'copy-cwd':
       return state.cwd !== ''
+    case 'copy-selection':
+      return hasSelection(state)
     case 'copy-session-id':
     case 'export':
       return state.sessionId !== undefined && state.sessionId !== ''
@@ -76,6 +95,9 @@ export async function runAction(
       return
     case 'copy-cwd':
       await deps.clipboardWrite(state.cwd)
+      return
+    case 'copy-selection':
+      await deps.clipboardWrite(state.selection as string)
       return
     case 'copy-session-id':
       await deps.clipboardWrite(state.sessionId as string)

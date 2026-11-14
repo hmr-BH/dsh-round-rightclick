@@ -6,7 +6,7 @@ export const INNER_RATIO = 0.18
 export const OUTER_RATIO = 0.47
 /** 图标和文字的中心到圆心的距离与圆盘直径之比。 */
 export const LABEL_RATIO = 0.33
-/** 圆盘上的操作数量。 */
+/** 未指定动作数量时使用的默认扇区数。 */
 export const MENU_COUNT = 6
 
 /** 圆盘中心位置及实际直径。 */
@@ -40,16 +40,19 @@ function point(deg: number, radius: number): [number, number] {
 /**
  * 生成环形扇区的 CSS 命中多边形，第一项居正上方。
  * @param index - 从零开始的动作位置
+ * @param count - 当前圆盘上的动作数量
  * @returns 用百分比表示的 clip-path 值
  */
-export function sectorClip(index: number): string {
-  const start = index * 360 / MENU_COUNT - 180 / MENU_COUNT
+export function sectorClip(index: number, count: number = MENU_COUNT): string {
+  if (count <= 0) throw new Error('sectorClip: count must be positive')
+  const span = 360 / count
+  const start = index * span - span / 2
   const points: string[] = []
   // 沿外弧正向、内弧反向连接，得到不覆盖中心按钮的封闭环形扇区。
   for (const [radius, direction] of [[OUTER_RATIO * 100, 1], [INNER_RATIO * 100, -1]]) {
     for (let step = 0; step <= 20; step++) {
       const progress = direction === 1 ? step / 20 : 1 - step / 20
-      const [x, y] = point(start + progress * 360 / MENU_COUNT, radius)
+      const [x, y] = point(start + progress * span, radius)
       points.push(`${x.toFixed(3)}% ${y.toFixed(3)}%`)
     }
   }
@@ -59,9 +62,23 @@ export function sectorClip(index: number): string {
 /**
  * 获取动作标签在圆盘中的百分比位置。
  * @param index - 动作位置
+ * @param count - 当前圆盘上的动作数量
  * @returns CSS left、top 的百分比值
  */
-export function labelPosition(index: number): { left: string; top: string } {
-  const [x, y] = point(index * 360 / MENU_COUNT, LABEL_RATIO * 100)
+export function labelPosition(index: number, count: number = MENU_COUNT): { left: string; top: string } {
+  if (count <= 0) throw new Error('labelPosition: count must be positive')
+  const [x, y] = point(index * 360 / count, LABEL_RATIO * 100)
   return { left: `${x}%`, top: `${y}%` }
+}
+
+/**
+ * 估算相邻标签不重叠的宽度：取相邻标签中心间距的 90%。
+ * 动作数量越多，可用宽度越窄。
+ * @param count - 当前圆盘上的动作数量
+ * @returns 用百分比表示的标签宽度
+ */
+export function labelWidthPercent(count: number = MENU_COUNT): number {
+  if (count <= 0) throw new Error('labelWidthPercent: count must be positive')
+  const spacing = 2 * Math.sin(Math.PI / count) * LABEL_RATIO * 100
+  return Math.round(spacing * 0.9 * 10) / 10
 }

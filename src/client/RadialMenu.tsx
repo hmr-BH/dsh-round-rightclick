@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import {
   isActionEnabled,
-  PIE_ACTION_IDS,
+  menuActions,
   runAction,
   type ActionDeps,
   type ActionState,
@@ -13,9 +13,16 @@ import {
 } from './actions.ts'
 import { actionDescription, actionError, dictionaryForDocument, withTurn } from './locales.ts'
 import { ensureRadialStyles } from './styles.ts'
-import { conversationTarget, isSessionConversationSurface } from './surface.ts'
+import { conversationTarget, isSessionConversationSurface, selectedConversationText } from './surface.ts'
 import { MenuIcon } from './Icons.tsx'
-import { INNER_RATIO, labelPosition, placeMenu, sectorClip, type MenuPlacement } from './menu-layout.ts'
+import {
+  INNER_RATIO,
+  labelPosition,
+  labelWidthPercent,
+  placeMenu,
+  sectorClip,
+  type MenuPlacement,
+} from './menu-layout.ts'
 
 /** 会话列表中的一行；菜单只读取工作目录、运行状态和占用来源计数。 */
 export interface SessionRowLike {
@@ -41,7 +48,11 @@ export interface RadialMenuProps {
   readonly deps: ActionDeps
 }
 
-const SECTORS = PIE_ACTION_IDS.map((id, index) => ({ id, clip: sectorClip(index), position: labelPosition(index) }))
+/** 读取文档当前选区中属于对话内容的文本；菜单打开时锁定该文本。 */
+function readSelection(): string {
+  if (typeof document === 'undefined') return ''
+  return selectedConversationText(document.getSelection())
+}
 
 /**
  * 找出主视图正在显示的会话。
@@ -157,7 +168,8 @@ export function RadialMenu(props: RadialMenuProps): React.JSX.Element {
         }
       }
       focusBeforeOpen.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-      const next = { ...placed, snapshot: { ...current, forkTarget } }
+      const selection = readSelection()
+      const next = { ...placed, snapshot: { ...current, forkTarget, selection } }
       openRef.current = next
       setOpen(next)
       setHover(null)
@@ -210,8 +222,9 @@ export function RadialMenu(props: RadialMenuProps): React.JSX.Element {
       return
     }
     const snapshot = { ...menu.snapshot, running: stateRef.current.running }
+    const actions = menuActions(menu.snapshot)
     if (!isActionEnabled(id, snapshot)) {
-      setHover(PIE_ACTION_IDS.indexOf(id))
+      setHover(actions.indexOf(id))
       return
     }
     // 在首次 await 之前锁住动作，防止快速连击创建多份分支或重复下载。
@@ -231,7 +244,18 @@ export function RadialMenu(props: RadialMenuProps): React.JSX.Element {
 
   const copy = dictionaryForDocument()
   const menuState: ActionState = { ...(open?.snapshot ?? state), running: state.running }
-  const description = hover === null ? copy.keys : hover === 'cancel' ? copy.cancel : actionDescription(PIE_ACTION_IDS[hover]!, menuState, copy)
+  const actions = menuActions(menuState)
+  const sectors = actions.map((id, index) => ({
+    id,
+    clip: sectorClip(index, actions.length),
+    position: labelPosition(index, actions.length),
+  }))
+  const hovered = typeof hover === 'number' ? actions[hover] : undefined
+  const description = hover === null
+    ? copy.keys
+    : hovered === undefined
+      ? copy.cancel
+      : actionDescription(hovered, menuState, copy)
 
   return (
     <div data-dsh-rr-layer="">
@@ -248,20 +272,22 @@ export function RadialMenu(props: RadialMenuProps): React.JSX.Element {
               top: open.y,
               ['--dsh-rr-size' as string]: `${String(open.size)}px`,
               ['--dsh-rr-hole' as string]: `${String(open.size * INNER_RATIO)}px`,
+              ['--dsh-rr-step' as string]: `${String(360 / actions.length)}deg`,
+              ['--dsh-rr-label-width' as string]: `${String(labelWidthPercent(actions.length))}%`,
             }}
             onClick={onPieClick}
             onPointerDown={(event) => { event.stopPropagation() }}
           >
             <button ref={centerElement} data-dsh-rr-hole="" onClick={close} type="button" aria-label={copy.cancel}
               onPointerEnter={() => setHover('cancel')} onFocus={() => setHover('cancel')}>
-              <MenuIcon name={typeof hover === 'number' ? PIE_ACTION_IDS[hover]! : 'close'} size={20} />
+              <MenuIcon name={hovered ?? 'close'} size={20} />
               <strong>{menuState.forkTarget?.turn === undefined ? copy.choose : withTurn(copy.turn, menuState)}</strong>
               <span>Esc</span>
             </button>
             <div data-dsh-rr-detail="" id={detailId} data-visible={typeof hover === 'number' ? '' : undefined}>
               <span>{description}</span>
             </div>
-            {SECTORS.map(({ id, clip, position }, index) => {
+            {sectors.map(({ id, clip, position }, index) => {
               const enabled = isActionEnabled(id, menuState)
               return (
                 <button
